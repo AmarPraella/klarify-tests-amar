@@ -55,13 +55,13 @@ describe("US FAD test cases desktop", () => {
         }
     };
 
-    function downloadObjectAsJson(exportObj, exportName) {
-        var dataStr =
+    function downloadDataLayerJson(exportObj, exportName) {
+        let dataStr =
             "data:text/json;charset=utf-8," +
             encodeURIComponent(JSON.stringify(exportObj));
-        var downloadAnchorNode = document.createElement("a");
+        let downloadAnchorNode = document.createElement("a");
         downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", exportName + ".json");
+        downloadAnchorNode.setAttribute("download", exportName);
         document.body.appendChild(downloadAnchorNode); // required for firefox
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
@@ -159,17 +159,15 @@ describe("US FAD test cases desktop", () => {
                 "FAD_WebsiteClick"
             );
         });
-        const dataLayer = cy.window().dataLayer;
-        cy.log(dataLayer);
+
+        // download dataLayer json object
         cy.window()
             .should("have.property", "dataLayer")
             .then((dataLayer) => {
-                console.log("dataLayer", dataLayer);
+                downloadDataLayerJson(
+                    { dataLayer: [...dataLayer] },
+                    `data-layer-${Date.now()}.json`
+                );
             });
-        // downloadObjectAsJson(dataLayer, `data-layer-${Date.now()}.json`);
     });
 });
-
-// Cypress.Commands.add('assertEventNotPresent', (arrayOfObjects, eventName) => {
-//     cy.wrap(arrayOfObjects).should('not.include', { event: eventName });
-//   });
