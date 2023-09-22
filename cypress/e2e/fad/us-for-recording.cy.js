@@ -1,3 +1,6 @@
+import { slowCypressDown } from "cypress-slow-down";
+slowCypressDown(800);
+
 describe("US FAD test cases desktop", () => {
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -20,7 +23,9 @@ describe("US FAD test cases desktop", () => {
 
     const searchLocation = (location) => {
         cy.get("#fad-search").within(() => {
-            cy.get(".mapboxgl-ctrl-geocoder--input").clear().type(location);
+            cy.get(".mapboxgl-ctrl-geocoder--input")
+                .clear()
+                .type(location, { delay: 100 });
             cy.wait(200);
             cy.get(".suggestions").find("li.active").click();
         });
