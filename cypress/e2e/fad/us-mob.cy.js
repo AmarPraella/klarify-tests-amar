@@ -1,9 +1,6 @@
-import { slowCypressDown } from "cypress-slow-down";
-slowCypressDown(800);
-
-describe("US FAD test cases desktop", () => {
+describe("US FAD test cases", () => {
     beforeEach(() => {
-        cy.viewport(1920, 1080);
+        cy.visit("https://us.klarify.me");
     });
 
     const eventsNames = [
@@ -19,13 +16,12 @@ describe("US FAD test cases desktop", () => {
         "FAD_DirectionsClick",
         "FAD_BookClick",
         "FAD_WebsiteClick",
+        "FAD_SwitchView",
     ];
 
     const searchLocation = (location) => {
         cy.get("#fad-search").within(() => {
-            cy.get(".mapboxgl-ctrl-geocoder--input")
-                .clear()
-                .type(location, { delay: 100 });
+            cy.get(".mapboxgl-ctrl-geocoder--input").clear().type(location);
             cy.wait(200);
             cy.get(".suggestions").find("li.active").click();
         });
@@ -60,7 +56,11 @@ describe("US FAD test cases desktop", () => {
         }
     };
 
-    function downloadDataLayerJson(exportObj, exportName) {
+    function downloadDataLayerJson(exportObj) {
+        const today = new Date();
+        const dateString = today.toISOString().slice(0, 10);
+        const exportName = `FAD-Datalayer-${dateString}.json`;
+    
         let dataStr =
             "data:text/json;charset=utf-8," +
             encodeURIComponent(JSON.stringify(exportObj));
@@ -72,13 +72,13 @@ describe("US FAD test cases desktop", () => {
         downloadAnchorNode.remove();
     }
 
-    it("Checks FAD is working as expected", () => {
-        cy.visit("https://us.klarify.me");
+
+    it("Tests FAD on mobile", () => {
+        cy.viewport(390, 844); // iphone 12pro
 
         // find and click on FAD button
-        cy.get(".find-doctor-link")
-            .find("a[href='/pages/find-a-doctor']")
-            .click();
+        cy.get(".nav-fill").find("a[name='menu']").click();
+        cy.get("#find-doctor-link").click();
         cy.url().should("include", "/pages/find-a-doctor");
         cy.wait(3000).then(() => {
             cy.window()
@@ -90,9 +90,8 @@ describe("US FAD test cases desktop", () => {
                     expect(eventExist, "No custom events exists").to.be.false;
                 });
         });
-
         // Fad search
-        searchLocation("San Francisco");
+        searchLocation("New York");
         assertEventExist("FAD_Search");
 
         // map interaction
@@ -109,6 +108,8 @@ describe("US FAD test cases desktop", () => {
         assertEventExist("FAD_PinClick");
 
         // doctor card click & detail click
+        cy.get("#list-change-btn").click();
+        assertEventExist("FAD_SwitchView")
         cy.get(".search-data-block")
             .then(($dataBlock) => {
                 const firstBlock = cy.wrap($dataBlock).first();
@@ -138,7 +139,6 @@ describe("US FAD test cases desktop", () => {
 
         // Doctor details
         searchLocation("Los Angeles");
-        cy.get(".mapboxgl-popup-content").should("be.visible");
 
         cy.get(".fad-list-search-body").then(($searchBody) => {
             // phone

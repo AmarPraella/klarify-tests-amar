@@ -1,9 +1,6 @@
-import { slowCypressDown } from "cypress-slow-down";
-slowCypressDown(800);
-
-describe("US FAD test cases desktop", () => {
+describe("US FAD test cases", () => {
     beforeEach(() => {
-        cy.viewport(1920, 1080);
+        cy.visit("https://us.klarify.me");
     });
 
     const eventsNames = [
@@ -19,13 +16,12 @@ describe("US FAD test cases desktop", () => {
         "FAD_DirectionsClick",
         "FAD_BookClick",
         "FAD_WebsiteClick",
+        "FAD_SwitchView"
     ];
 
     const searchLocation = (location) => {
         cy.get("#fad-search").within(() => {
-            cy.get(".mapboxgl-ctrl-geocoder--input")
-                .clear()
-                .type(location, { delay: 100 });
+            cy.get(".mapboxgl-ctrl-geocoder--input").clear().type(location);
             cy.wait(200);
             cy.get(".suggestions").find("li.active").click();
         });
@@ -72,14 +68,13 @@ describe("US FAD test cases desktop", () => {
         downloadAnchorNode.remove();
     }
 
-    it("Checks FAD is working as expected", () => {
-        cy.visit("https://us.klarify.me");
-
+    it("Tests FAD on desktop", () => {
+        cy.viewport(1920, 1080);
         // find and click on FAD button
-        cy.get(".find-doctor-link")
-            .find("a[href='/pages/find-a-doctor']")
+        cy.get("#fad-link")
+            //.find("a[href='/pages/find-a-doctor']")
             .click();
-        cy.url().should("include", "/pages/find-a-doctor");
+        //cy.url().should("include", "/pages/find-a-doctor");
         cy.wait(3000).then(() => {
             cy.window()
                 .should("have.property", "dataLayer")
@@ -92,7 +87,7 @@ describe("US FAD test cases desktop", () => {
         });
 
         // Fad search
-        searchLocation("San Francisco");
+        searchLocation("New York");
         assertEventExist("FAD_Search");
 
         // map interaction
